@@ -3,8 +3,12 @@ let canvas;
 let capturedImage;
 let model;
 let stream;
+let modelLoaded = false;
+let cameraReady = false;
 
 async function init() {
+    checkCompatibility();
+    
     // Performance monitoring
     console.log('Browser Info:', {
         userAgent: navigator.userAgent,
@@ -15,11 +19,6 @@ async function init() {
         } : 'Not available'
     });
 
-    console.time('Model Loading Time');
-    // Loading COCO-SSD model
-    model = await cocoSsd.load();
-    console.timeEnd('Model Loading Time');
-    
     // Getting access to elements
     video = document.getElementById('video');
     canvas = document.getElementById('canvas');
@@ -27,15 +26,41 @@ async function init() {
     const newPhotoButton = document.getElementById('newPhotoButton');
     const analyzeButton = document.getElementById('analyzeButton');
     
-    // Initial camera setup
-    await setupCamera();
+    // Start both processes in parallel
+    const [modelPromise, cameraPromise] = await Promise.all([
+        loadModel(),
+        setupCamera()
+    ]);
 
     // Event handlers
     captureButton.addEventListener('click', captureImage);
     newPhotoButton.addEventListener('click', startNewPhoto);
     analyzeButton.addEventListener('click', analyzeImage);
+}
 
-    checkCompatibility();
+async function loadModel() {
+    try {
+        console.time('Model Loading Time');
+        model = await cocoSsd.load({
+            onProgress: (progress) => {
+                // Update loading progress bar
+                const progressBar = document.querySelector('.progress');
+                if (progressBar) {
+                    progressBar.style.width = `${progress * 100}%`;
+                }
+            }
+        });
+        console.timeEnd('Model Loading Time');
+        
+        modelLoaded = true;
+        document.getElementById('loading').style.display = 'none';
+        
+        return model;
+    } catch (err) {
+        console.error('Model loading error:', err);
+        document.getElementById('loading').innerHTML = 'Error loading model. Please refresh the page.';
+        throw err;
+    }
 }
 
 async function setupCamera() {
@@ -48,9 +73,20 @@ async function setupCamera() {
             } 
         });
         video.srcObject = stream;
+        
+        // Wait for video to be ready
+        await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+                cameraReady = true;
+                resolve();
+            };
+        });
+        
+        return stream;
     } catch (err) {
         console.error('Camera access error:', err);
         alert('Failed to access camera');
+        throw err;
     }
 }
 
