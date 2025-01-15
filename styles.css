@@ -1,12 +1,20 @@
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .camera-container {
     position: relative;
     margin: 20px 0;
+    flex: 1;
+    min-width: 300px;
 }
 
 video, canvas {
@@ -31,4 +39,34 @@ button {
     padding: 15px;
     border: 1px solid #ccc;
     display: none;
+    flex: 1;
+    min-width: 300px;
+}
+
+.note {
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+}
+
+.calibration {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.input-group {
+    margin: 10px 0;
+}
+
+.input-group label {
+    display: inline-block;
+    width: 100px;
+    margin-right: 10px;
+}
+
+input[type="number"], select {
+    padding: 5px;
+    width: 100px;
 } 

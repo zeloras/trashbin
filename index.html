@@ -1,22 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trash Bin Analysis</title>
+    <title>Object Analysis</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Trash Bin Analysis</h1>
-        <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas" style="display: none;"></canvas>
-            <div class="controls">
-                <button id="captureButton">Take Photo</button>
-                <button id="analyzeButton" disabled>Analyze</button>
-            </div>
+        <h1>Object Analysis</h1>
+        <div id="compatibility-check" style="display: none;" class="warning">
+            <p>Your device might not meet the minimum requirements:</p>
+            <ul id="compatibility-issues"></ul>
         </div>
-        <div id="result" class="result"></div>
+        <div class="content-wrapper">
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <div class="controls">
+                    <button id="captureButton">Take Photo</button>
+                    <button id="newPhotoButton" style="display: none;">New Photo</button>
+                    <button id="analyzeButton" disabled>Analyze</button>
+                </div>
+                <div id="calibration" class="calibration" style="display: none;">
+                    <h3>Calibration</h3>
+                    <p>Please enter the actual size of the object:</p>
+                    <div class="input-group">
+                        <label>Height (cm):</label>
+                        <input type="number" id="realHeight" value="30" min="1" max="300">
+                    </div>
+                    <div class="input-group">
+                        <label>Shape:</label>
+                        <select id="objectShape">
+                            <option value="box">Box/Container</option>
+                            <option value="cylinder">Cylinder</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="result" class="result"></div>
+        </div>
     </div>
 
     <!-- TensorFlow.js -->
