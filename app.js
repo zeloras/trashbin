@@ -5,6 +5,8 @@ let model;
 let stream;
 let modelLoaded = false;
 let cameraReady = false;
+let selectedModel = 'tensorflow';
+let modelInitialized = false;
 
 async function init() {
     checkCompatibility();
@@ -115,10 +117,14 @@ function captureImage() {
     
     capturedImage = canvas.toDataURL('image/jpeg');
     
-    // Show canvas and calibration, hide video
+    // Show canvas, hide video
     canvas.style.display = 'block';
     video.style.display = 'none';
-    document.getElementById('calibration').style.display = 'block';
+    
+    // Show calibration only for TensorFlow
+    if (selectedModel === 'tensorflow') {
+        document.getElementById('calibration').style.display = 'block';
+    }
     
     // Update buttons
     document.getElementById('captureButton').style.display = 'none';
@@ -175,44 +181,59 @@ async function analyzeImage() {
     result.innerHTML = 'Analyzing image...';
 
     try {
-        console.time('Object Detection Time');
-        const predictions = await model.detect(canvas);
-        console.timeEnd('Object Detection Time');
-        
-        const memoryUsage = performance.memory ? 
-            Math.round(performance.memory.usedJSHeapSize / 1048576) + 'MB' : 
-            'Not available';
-        console.log('Memory usage after detection:', memoryUsage);
-        
-        if (!predictions || predictions.length === 0) {
+        if (selectedModel === 'tensorflow') {
+            console.time('Object Detection Time');
+            const predictions = await model.detect(canvas);
+            console.timeEnd('Object Detection Time');
+            
+            const memoryUsage = performance.memory ? 
+                Math.round(performance.memory.usedJSHeapSize / 1048576) + 'MB' : 
+                'Not available';
+            console.log('Memory usage after detection:', memoryUsage);
+            
+            if (!predictions || predictions.length === 0) {
+                result.innerHTML = `
+                    <h3>Analysis Results:</h3>
+                    <p>No objects detected in the image.</p>
+                    <p class="note">Try taking another photo with a clearer view of the object.</p>
+                `;
+                return;
+            }
+
+            const detected = predictions[0];
+            const objectHeight = detected.bbox[3];
+            const imageHeight = canvas.height;
+            const approximateDistance = estimateDistance(objectHeight, imageHeight);
+            const volume = estimateVolume(detected.bbox);
+
+            const volumeInLiters = volume * 1000;
+            const volumeUnit = volumeInLiters >= 1 ? 'liters' : 'ml';
+            const volumeValue = volumeInLiters >= 1 ? 
+                volumeInLiters.toFixed(1) : 
+                (volumeInLiters * 1000).toFixed(0);
+
             result.innerHTML = `
                 <h3>Analysis Results:</h3>
-                <p>No objects detected in the image.</p>
-                <p class="note">Try taking another photo with a clearer view of the object.</p>
+                <p>Detected object: ${detected.class}</p>
+                <p>Confidence: ${(detected.score * 100).toFixed(1)}%</p>
+                <p>Approximate distance: ${approximateDistance.toFixed(2)} meters</p>
+                <p>Approximate volume: ${volumeValue} ${volumeUnit}</p>
+                <p class="note">Note: Volume is an approximation based on visible dimensions</p>
             `;
-            return;
+        } else {
+            const imageData = canvas.toDataURL('image/jpeg');
+            const analysis = await analyzeWithOpenAI(imageData);
+            
+            result.innerHTML = `
+                <h3>Analysis Results:</h3>
+                <p>Detected object: ${analysis.object}</p>
+                <p>Confidence: ${analysis.confidence}%</p>
+                <p>Approximate distance: ${analysis.distance} meters</p>
+                <p>Dimensions: ${analysis.dimensions.width}×${analysis.dimensions.height}×${analysis.dimensions.depth} cm</p>
+                <p>Approximate volume: ${analysis.volume}</p>
+                <p class="note">Analysis provided by OpenAI Vision API</p>
+            `;
         }
-
-        const detected = predictions[0];
-        const objectHeight = detected.bbox[3];
-        const imageHeight = canvas.height;
-        const approximateDistance = estimateDistance(objectHeight, imageHeight);
-        const volume = estimateVolume(detected.bbox);
-
-        const volumeInLiters = volume * 1000;
-        const volumeUnit = volumeInLiters >= 1 ? 'liters' : 'ml';
-        const volumeValue = volumeInLiters >= 1 ? 
-            volumeInLiters.toFixed(1) : 
-            (volumeInLiters * 1000).toFixed(0);
-
-        result.innerHTML = `
-            <h3>Analysis Results:</h3>
-            <p>Detected object: ${detected.class}</p>
-            <p>Confidence: ${(detected.score * 100).toFixed(1)}%</p>
-            <p>Approximate distance: ${approximateDistance.toFixed(2)} meters</p>
-            <p>Approximate volume: ${volumeValue} ${volumeUnit}</p>
-            <p class="note">Note: Volume is an approximation based on visible dimensions</p>
-        `;
     } catch (err) {
         console.error('Analysis error:', err);
         result.innerHTML = `
@@ -259,5 +280,188 @@ function checkCompatibility() {
     }
 }
 
-// Initialize on page load
-window.addEventListener('load', init); 
+async function initializeAnalysis() {
+    try {
+        const modelType = document.querySelector('input[name="model"]:checked').value;
+        selectedModel = modelType;
+        
+        // Hide model selection, show loading
+        document.querySelector('.model-selection').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        
+        // Show/hide calibration based on model type
+        const calibrationBlock = document.getElementById('calibration');
+        calibrationBlock.style.display = modelType === 'tensorflow' ? 'block' : 'none';
+        
+        if (modelType === 'tensorflow') {
+            await loadTensorFlowScripts();
+            await init();
+        } else {
+            await initOpenAI();
+        }
+        
+        // Show the main interface
+        document.querySelector('.content-wrapper').style.display = 'block';
+    } catch (error) {
+        console.error('Initialization error:', error);
+        document.getElementById('loading').innerHTML = `
+            <h3>Error</h3>
+            <p>Failed to initialize the selected model.</p>
+            <p class="note">${error.message}</p>
+            <button onclick="location.reload()">Try Again</button>
+        `;
+    }
+}
+
+async function loadTensorFlowScripts() {
+    try {
+        const scripts = CONFIG.MODEL_SETTINGS.tensorflow.scripts;
+        for (const src of scripts) {
+            try {
+                await loadScript(src);
+                console.log(`Successfully loaded: ${src}`);
+            } catch (error) {
+                console.error(`Failed to load script: ${src}`, error);
+                throw new Error(`Failed to load TensorFlow script: ${src}`);
+            }
+        }
+    } catch (error) {
+        document.getElementById('loading').innerHTML = `
+            <h3>Error</h3>
+            <p>Failed to load TensorFlow. Please check your internet connection and try again.</p>
+            <p class="note">${error.message}</p>
+        `;
+        throw error;
+    }
+}
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => {
+            console.log(`Script loaded successfully: ${src}`);
+            resolve();
+        };
+        script.onerror = (error) => {
+            console.error(`Script load error: ${src}`, error);
+            reject(new Error(`Failed to load script: ${src}`));
+        };
+        document.body.appendChild(script);
+    });
+}
+
+async function analyzeWithOpenAI(imageData) {
+    try {
+        const base64Image = imageData.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: CONFIG.MODEL_SETTINGS.openai.model,
+                messages: [{
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: `Analyze this image and return a JSON object with the following structure:
+                            {
+                                "object": "name of detected object",
+                                "confidence": "confidence score in percentage",
+                                "distance": "estimated distance in meters",
+                                "volume": "estimated volume in liters or milliliters",
+                                "dimensions": {
+                                    "width": "in cm",
+                                    "height": "in cm",
+                                    "depth": "in cm"
+                                }
+                            }
+                            Be as precise as possible with measurements.`
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: `data:image/jpeg;base64,${base64Image}`,
+                                detail: "high"
+                            }
+                        }
+                    ]
+                }
+            ],
+            response_format: { type: "json_object" },
+            max_tokens: 500
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API Response:', errorData);
+            throw new Error(`OpenAI API Error: ${errorData.error?.message || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        console.log('OpenAI Response:', data);
+        
+        if (!data.choices || !data.choices[0]) {
+            throw new Error('Invalid response format from OpenAI API');
+        }
+
+        // Parse JSON from the response
+        const analysis = JSON.parse(data.choices[0].message.content);
+        return analysis;
+    } catch (error) {
+        console.error('OpenAI API Error:', error);
+        throw new Error(`Failed to analyze image: ${error.message}`);
+    }
+}
+
+async function initOpenAI() {
+    try {
+        if (!CONFIG.OPENAI_API_KEY || CONFIG.OPENAI_API_KEY === 'your-api-key-here') {
+            throw new Error('OpenAI API key is not configured');
+        }
+
+        // Initialize DOM elements
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('captureButton');
+        const newPhotoButton = document.getElementById('newPhotoButton');
+        const analyzeButton = document.getElementById('analyzeButton');
+
+        // Hide calibration form for OpenAI
+        document.getElementById('calibration').style.display = 'none';
+
+        // Initialize camera setup
+        await setupCamera();
+        
+        // Hide loading screen
+        document.getElementById('loading').style.display = 'none';
+        
+        // Setup event handlers
+        captureButton.addEventListener('click', captureImage);
+        newPhotoButton.addEventListener('click', startNewPhoto);
+        analyzeButton.addEventListener('click', analyzeImage);
+        
+        modelInitialized = true;
+        
+    } catch (error) {
+        console.error('OpenAI initialization error:', error);
+        document.getElementById('loading').innerHTML = `
+            <h3>Error</h3>
+            <p>${error.message}</p>
+            <p>Please check your configuration and refresh the page.</p>
+        `;
+        throw error;
+    }
+}
+
+// Add event listener for model selection
+document.getElementById('startAnalysis').addEventListener('click', initializeAnalysis);
+
+// Initially hide the content wrapper
+document.querySelector('.content-wrapper').style.display = 'none'; 

@@ -8,7 +8,24 @@
 <body>
     <div class="container">
         <h1>Object Analysis</h1>
-        <div id="loading" class="loading">
+        <div class="model-selection">
+            <h3>Select Analysis Model:</h3>
+            <div class="model-options">
+                <label>
+                    <input type="radio" name="model" value="tensorflow" checked>
+                    TensorFlow (Offline, faster)
+                    <span class="model-description">Uses TensorFlow.js for local processing. Works offline, but may be less accurate.</span>
+                </label>
+                <label>
+                    <input type="radio" name="model" value="openai">
+                    OpenAI Vision (Cloud-based, more accurate)
+                    <span class="model-description">Uses OpenAI's GPT-4 Vision. Requires internet connection, but provides more detailed analysis.</span>
+                </label>
+            </div>
+            <button id="startAnalysis">Start Analysis</button>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
             <p>Loading model...</p>
             <div class="progress-bar">
                 <div class="progress"></div>
@@ -47,9 +64,8 @@
         </div>
     </div>
 
-    <!-- TensorFlow.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <!-- Load scripts based on selection -->
+    <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
 </html> 

@@ -90,4 +90,52 @@ input[type="number"], select {
     height: 100%;
     background-color: #4CAF50;
     transition: width 0.3s ease;
+}
+
+.model-selection {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.model-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.model-options label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.model-options label:hover {
+    background: #fff;
+}
+
+.model-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-left: 25px;
+}
+
+#startAnalysis {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#startAnalysis:hover {
+    background: #45a049;
 } 
