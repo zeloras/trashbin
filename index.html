@@ -8,33 +8,6 @@
 <body>
     <div class="container">
         <h1>Object Analysis</h1>
-        <div class="model-selection">
-            <h3>Select Analysis Model:</h3>
-            <div class="model-options">
-                <label>
-                    <input type="radio" name="model" value="tensorflow" checked>
-                    TensorFlow (Offline, faster)
-                    <span class="model-description">Uses TensorFlow.js for local processing. Works offline, but may be less accurate.</span>
-                </label>
-                <label>
-                    <input type="radio" name="model" value="openai">
-                    OpenAI Vision (Cloud-based, more accurate)
-                    <span class="model-description">Uses OpenAI's GPT-4 Vision. Requires internet connection, but provides more detailed analysis.</span>
-                </label>
-            </div>
-            <button id="startAnalysis">Start Analysis</button>
-        </div>
-        
-        <div id="loading" class="loading" style="display: none;">
-            <p>Loading model...</p>
-            <div class="progress-bar">
-                <div class="progress"></div>
-            </div>
-        </div>
-        <div id="compatibility-check" style="display: none;" class="warning">
-            <p>Your device might not meet the minimum requirements:</p>
-            <ul id="compatibility-issues"></ul>
-        </div>
         <div class="content-wrapper">
             <div class="camera-container">
                 <video id="video" autoplay playsinline></video>
@@ -43,21 +16,6 @@
                     <button id="captureButton">Take Photo</button>
                     <button id="newPhotoButton" style="display: none;">New Photo</button>
                     <button id="analyzeButton" disabled>Analyze</button>
-                </div>
-                <div id="calibration" class="calibration" style="display: none;">
-                    <h3>Calibration</h3>
-                    <p>Please enter the actual size of the object:</p>
-                    <div class="input-group">
-                        <label>Height (cm):</label>
-                        <input type="number" id="realHeight" value="30" min="1" max="300">
-                    </div>
-                    <div class="input-group">
-                        <label>Shape:</label>
-                        <select id="objectShape">
-                            <option value="box">Box/Container</option>
-                            <option value="cylinder">Cylinder</option>
-                        </select>
-                    </div>
                 </div>
             </div>
             <div id="result" class="result"></div>
