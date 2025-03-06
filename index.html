@@ -1,29 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Object Analysis</title>
+    <title>Camera App</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Object Analysis</h1>
+        <div class="status-bar top"></div>
         <div class="content-wrapper">
             <div class="camera-container">
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas" style="display: none;"></canvas>
                 <div class="controls">
-                    <button id="captureButton">Take Photo</button>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    <button id="uploadButton" title="Upload Photo">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/>
+                        </svg>
+                    </button>
+                    <button id="captureButton"></button>
                     <button id="newPhotoButton" style="display: none;">New Photo</button>
-                    <button id="analyzeButton" disabled>Analyze</button>
                 </div>
             </div>
-            <div id="result" class="result"></div>
         </div>
+        <div class="status-bar bottom"></div>
     </div>
 
-    <!-- Load scripts based on selection -->
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+    <!-- Load bundled script -->
+    <script src="bundle.js"></script>
 </body>
 </html> 

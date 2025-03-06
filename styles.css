@@ -1,141 +1,205 @@
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.content-wrapper {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.camera-container {
-    position: relative;
-    margin: 20px 0;
-    flex: 1;
-    min-width: 300px;
-}
-
-video, canvas {
-    width: 100%;
-    max-width: 640px;
-    height: auto;
-}
-
-.controls {
-    margin: 20px 0;
-}
-
-button {
-    padding: 10px 20px;
-    margin-right: 10px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.result {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #ccc;
-    display: none;
-    flex: 1;
-    min-width: 300px;
-}
-
-.note {
-    font-size: 0.8em;
-    color: #666;
-    font-style: italic;
-}
-
-.calibration {
-    margin: 20px 0;
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.input-group {
-    margin: 10px 0;
-}
-
-.input-group label {
-    display: inline-block;
-    width: 100px;
-    margin-right: 10px;
-}
-
-input[type="number"], select {
-    padding: 5px;
-    width: 100px;
-}
-
-.loading {
-    text-align: center;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 20px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     overflow: hidden;
 }
 
-.progress {
-    width: 0;
+html, body {
+    width: 100%;
     height: 100%;
-    background-color: #4CAF50;
-    transition: width 0.3s ease;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
-.model-selection {
-    margin: 20px 0;
-    padding: 20px;
-    background: #f5f5f5;
-    border-radius: 8px;
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #000;
+    color: #fff;
+    min-height: 100vh;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
 }
 
-.model-options {
+.container {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin: 15px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
 }
 
-.model-options label {
+.status-bar {
+    width: 100%;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    transition: background-color 0.3s ease;
+}
+
+.status-bar.error {
+    background: rgba(255, 0, 0, 0.3);
+}
+
+.status-bar.success {
+    background: rgba(0, 255, 0, 0.2);
+}
+
+.content-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: calc(100% - 160px);
+}
+
+.camera-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #000;
+    overflow: hidden;
+}
+
+#video, #canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.controls {
+    position: absolute;
+    bottom: 1rem;
+    left: 0;
+    right: 0;
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 1rem;
+    z-index: 10;
 }
 
-.model-options label:hover {
+#captureButton {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
     background: #fff;
-}
-
-.model-description {
-    font-size: 0.9em;
-    color: #666;
-    margin-left: 25px;
-}
-
-#startAnalysis {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
+    border: 4px solid rgba(255, 255, 255, 0.8);
     cursor: pointer;
-    font-size: 16px;
+    transition: transform 0.2s;
+    padding: 0;
+    flex-shrink: 0;
 }
 
-#startAnalysis:hover {
-    background: #45a049;
-} 
+#captureButton:hover {
+    transform: scale(1.05);
+}
+
+#uploadButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#uploadButton svg {
+    width: 20px;
+    height: 20px;
+    fill: #fff;
+}
+
+#newPhotoButton {
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    border: none;
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .status-bar {
+        height: 60px;
+    }
+
+    .content-wrapper {
+        height: calc(100% - 120px);
+    }
+
+    .controls {
+        bottom: 0.8rem;
+        gap: 1rem;
+    }
+
+    #captureButton {
+        width: 55px;
+        height: 55px;
+    }
+
+    #uploadButton {
+        width: 35px;
+        height: 35px;
+    }
+
+    #uploadButton svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    #newPhotoButton {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (orientation: landscape) {
+    .container {
+        flex-direction: row;
+    }
+
+    .status-bar {
+        width: 60px;
+        height: 100%;
+    }
+
+    .content-wrapper {
+        width: calc(100% - 120px);
+        height: 100%;
+    }
+}
+
+/* Prevent text selection */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Allow button text selection */
+button {
+    -webkit-user-select: text;
+    user-select: text;
+}
